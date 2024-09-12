@@ -2,5 +2,6 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-    Bezhanov\Faker\Laravel\FakerServiceProvider::class, // adding service provider
+    App\Providers\CartServiceProvider::class,
+    Bezhanov\Faker\Laravel\FakerServiceProvider::class,
 ];

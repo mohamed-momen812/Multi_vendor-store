@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Facade;
+
 return [
 
     /*
@@ -78,6 +80,8 @@ return [
     |
     */
 
+    'currency' => 'USD',
+
     'locale' => env('APP_LOCALE', 'en'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
@@ -122,5 +126,10 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    // get the application defualt aliases and merge new one to it
+    'aliases' => Facade::defaultAliases()->merge([
+        'Currency' => App\Helpers\Currency::class
+    ])->toArray()
 
 ];

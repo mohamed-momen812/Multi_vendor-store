@@ -22,13 +22,13 @@ class ProductFactory extends Factory
        $name = fake()->productName;
         return [
             "name"=> $name,
-            "slug"=> Str::slug($name),
+            "slug"=> fake()->unique()->slug(),
             "description"=> $this->faker->paragraph,
             "image"=> $this->faker->imageUrl(300, 300),
             "price"=> $this->faker->randomFloat(1, 1, 499),
             "compare_price"=> $this->faker->randomFloat(1, 500, 999),
             "featured"=> rand(0, 1),
-            "category_id"=>Category::inRandomOrder()->first()->id, // the first id in rondom in categorys
+            "category_id"=> Category::inRandomOrder()->first()->id, // the first id in rondom in categorys
             "store_id"=> Store::inRandomOrder()->first()->id,
         ];
     }

@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements MustVerifyEmail // must use MustVerifyEmail to send email on registeration to verify
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable; // Notifiable to make this model notifiable to send notifictions
 
     /**
      * The attributes that are mass assignable.

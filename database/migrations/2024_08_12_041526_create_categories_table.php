@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
 
             /*
-                in relation between to table must to columns in relation be in the same type
+                in relation between to table must columns in relation be in the same type
                foreignId() unsigned big integer
 
                ->constrained() Create a foreign key constraint on this column

@@ -27,6 +27,7 @@ class Category extends Model
         return $this->hasMany(Product::class, 'category_id', 'id');
     }
 
+    // Define an inverse relationship to the parent cotegory
     public function parent() {
         return $this->belongsTo(Category::class,'parent_id','id')
          ->withDefault([ // if no category found
@@ -34,6 +35,7 @@ class Category extends Model
             ]);
     }
 
+    // Define hasMany relationship to the cotegories
     public function children() {
         return $this->hasMany(Category::class,'parent_id', 'id');
     }
@@ -42,14 +44,17 @@ class Category extends Model
     public function scopeActive( Builder $builder ) {
         $builder->where("status", "=", "active");
     }
-    public function scopeFilter(Builder $builder, $filters) {
-    if ($filters['name'] ?? false) {
-        $builder->where('categories.name', 'like', '%' . $filters['name'] . '%'); // must use categories.name cuse of left join
+
+    // define local scope in model to access it in the controller Coategory::filter($filters), the function name must start with scope to pass the builder as an argument and access it with the word after scope
+    public function scopeFilter(Builder $builder, $filters) { // The Builder $builder is passed automatically by Laravel when you call the filter() scope method.
+        if ($filters['name'] ?? false) { // must use false cause if no name = empty string meaning true
+            $builder->where('categories.name', 'like', '%' . $filters['name'] . '%'); // must use categories.name cuse of left join
+        }
+
+        if ($filters['status'] ?? false) {
+            $builder->where('categories.status', '=', $filters['status']);
+        } // no return its a query builder
     }
-    if ($filters['status'] ?? false) {
-        $builder->where('categories.status', '=', $filters['status']);
-    }
-}
 
 
     // use for validation just for dry
@@ -62,9 +67,10 @@ class Category extends Model
                 'string',
                 'min:3',
                 'max:255',
-                "unique:categories,name,$id",
+                "unique:categories,name,$id", // $id for  exclude the current record from the uniqueness check.
 
 
+                // there are 3 ways to making custom validate
                 /*
                     // 1- making custom rule without class just for here (closure)
                     function ($attribute, $value, $fail) {
@@ -75,10 +81,12 @@ class Category extends Model
                 */
 
                 /*
-                    // 2- require custom rule form my rule class to use it everywhere
+                    // 2- require custom rule form my rule classes to use it everywhere
                     new Filter(['php', 'laravel', 'js'])
                 */
+
                 // 3- making filter method just like all method in Validator class with macros approch to use it everywhere
+
                 'filter:php,laravel,html'
             ],
             'image' => [

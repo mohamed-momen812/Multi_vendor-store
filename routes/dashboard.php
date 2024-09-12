@@ -3,15 +3,16 @@
 use App\Http\Controllers\Dashboard\CategoriesController;
 use App\Http\Controllers\Dashboard\ProductsController;
 use App\Http\Controllers\Dashboard\ProfileController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Middleware\CheckUserType;
 use Illuminate\Support\Facades\Route;
 
 
 
 Route::group([
-    'middleware' => ['auth'],
+    'middleware' => ['auth', CheckUserType::class . ':admin,super-admin'], //  passing argument to CheckUserType middleware
     'as' => 'dashboard.', // prefix name for all routes
-    'prefix' => 'dashboard' // prefix url for all routes
+    'prefix' => 'dashboard' // prefix uri for all routes
 ], function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -29,7 +29,6 @@ class ProfileController extends Controller
         ]);
 
         $user = Auth::user();
-
         // fill will put data into model not in db, so use here save to update if existing and create if not existing
         $user->profile->fill($request->all())->save(); // profile from relation return profile object and can access to it
 

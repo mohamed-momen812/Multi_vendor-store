@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Helpers\Controllers\UplodeImage;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Tag;
@@ -18,9 +19,6 @@ class ProductsController extends Controller
      public function index()
     {
         $products = Product::with(['category', 'store'])->paginate();
-        // select * form products
-        // select * from cotegories where id in (...)
-        // select * from stores where id in (...)
 
         return view("dashboard.products.index", compact("products"));
     }
@@ -55,33 +53,50 @@ class ProductsController extends Controller
     public function edit(string $id)
     {
         $product = Product::findOrFail($id);
-        $tags = $product->tags;
+
+        // tags(): for access relation to get tags as a collection, so use pluck('name') to return only requried name, and convert it to array to simple convert it to string to show at the page
+        // pluck('name'): This returns a collection of tag names.
+        $tags = implode(",", $product->tags()->pluck('name')->toArray());
+
         return view("dashboard.products.edit", compact("product", 'tags'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Product $product, UplodeImage $image)
     {
-        $product->update($request->except('tags'));
+        $data = $request->except('tags', 'image');
 
-        $tags = explode(',', $request->post('tags'));
+        $old_image = $product->image;
+
+
+
+        $path = $image->StoreImageAndGettingPass($request);
+
+        $data['image'] = $path ?? $old_image;
+
+        $product->update($data);
+
+        $tags = json_decode($request->post('tags')); // convert json from pakage tagify to an array
         $tag_ids = [];
 
-        foreach ($tags as $t_name) {
-            $slug = Str::slug($t_name);
-            $tag = Tag::where('slug', $slug)->first();
-            if (!$tag) {
-                $tag = Tag::create([
-                    'name'=> $t_name,
-                    'slug'=> $slug,
-                ]);
-            }
-            $tag_ids[] = $tag->id;
-        }
-        $product->tags()->sync($tag_ids); //
+        $saved_tags = Tag::all(); // for performance: use it here one time to not use it many time in foreach to minemize queries
 
+        if($tags){
+            foreach ($tags as $item) {
+                $slug = Str::slug($item->value);
+                $tag = $saved_tags->where('slug', $slug)->first(); // this is not query cuase i have the collection already
+                if (!$tag) {
+                    $tag = Tag::create([
+                        'name'=> $item->value,
+                        'slug'=> $slug,
+                    ]);
+                }
+                $tag_ids[] = $tag->id;
+            }
+            $product->tags()->sync($tag_ids); // It takes an array of IDs ($tag_ids in this case) and ensures that only those IDs are associated with the model.
+        }                                     // Any existing associations that are not in the array will be removed, and any new ones will be added.
         return redirect()->route('dashboard.products.index')->with('success','Product updated');
     }
 
@@ -92,4 +107,8 @@ class ProductsController extends Controller
     {
         //
     }
+
+
+
+
 }

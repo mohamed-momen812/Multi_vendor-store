@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Helpers\Controllers\UplodeImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
@@ -15,36 +16,38 @@ class CategoriesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $request = request();  // acccess to the request, also we can access to the request via index(Requset $request)
-        // $request->query(); // access to params in the request
 
-        // $query = Category::query(); // access to the query builder
-
+        // $request = request();  // acccess to the request, also we can access to the request via index(Requset $request)
+        // $request->query(); // access to params in the request, return array
+        // $query = Category::query(); // access to the query builder, create new query builder
         // $categories = Category::simplePaginate(2); // « Previous Next »
 
+        // get categories with parent by joining table, but can access it with relations
         /*
-            select a.*, b.name as parent_name
-            from cotegories as a
-            left join categories as b on b.id = a.parent_id
-         */
-        $categories = Category::with('parent') // access parent data in each single category, with = populate in node
-            /*
-                leftJoin('categories as parents', 'parents.id', '=', 'categories.parent_id')
+            // select a.*, b.name as parent_name
+            // from cotegories as a
+            // left join categories as b on b.id = a.parent_id
+            $categories = Category::query()
+                ->leftJoin('categories as parents', 'parents.id', '=', 'categories.parent_id')
                 ->select([
-                    'categories.*',
-                    'parents.name as parent_name',
-                ])
-            */
-            // ->select('categories.*') // becuase i use selectRaw
-            // ->selectRaw('( select count(*) from products where category_id = categories.id and status = active ) as products_count') // Add a new "raw" select expression to the query, without column
-            ->withCount([
+                        'categories.*',
+                        'parents.name as parent_name',
+                    ])
+
+                ->select('categories.*') // becuase i use selectRaw
+                ->selectRaw('( select count(*) from products where category_id = categories.id and status = active ) as products_count') // Add a new "raw" select expression to the query, without column
+        */
+
+        // access parent data in each single category, with like populate in node
+        $categories = Category::with('parent')
+            ->withCount([ // by the relation in category model git all related product
                 'products as product_number' => function ($query) {
-                    $query->where('status','=','active');
+                    $query->where('status', '=', 'active');
                 }
-            ]) // from relations instead of select
-            ->filter($request->query()) // custom filter form model
+            ])
+            ->filter($request->query()) // custom filter form category model, (local scope)
             ->orderBy('categories.id') // built in filter, sorting, by defualt sorting with created_at
             // ->withTrashed() // all with removing by soft delete
             // ->onlyTrashed() // just those removing by soft delete
@@ -66,9 +69,10 @@ class CategoriesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, UplodeImage $image)
     {
         $request->validate(Category::rules(), [
+            // redifine the error messages
             'required' => 'This field is required',
             'name.unique' => 'This name is already exists!'// if use name.unique use this message for name only
         ]);
@@ -81,7 +85,7 @@ class CategoriesController extends Controller
         // we can't merge image becuase we have in req image already so we access on all field of the req except the image on $data and push image field
         $data = $request->except('image');
 
-        $path = $this->uploadImage($request);
+        $path = $image->StoreImageAndGettingPass($request);
 
         $data['image'] = $path;
 
@@ -96,7 +100,7 @@ class CategoriesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Category $category) // access cotegory form route binding
+    public function show(Category $category) // access cotegory via oute model binding
     {
         return view('dashboard.categories.show', compact('category'));
     }
@@ -104,13 +108,13 @@ class CategoriesController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id) // $id param
+    public function edit(string $id) // $id param, also we can use route model pinding
     {
 
         $category = Category::find($id);
         if(! $category){
             return Redirect::route('dashboard.categories.index')
-            ->with('info','No item found');
+            ->with('info','No item found'); // Flash a piece of data to the session.
         }
 
         /**
@@ -120,10 +124,10 @@ class CategoriesController extends Controller
             use $query to access to query in the outer function
             use $id to pass $id to the function, we con't pass it inside function becuase function scope
          */
-        $parents = Category::where('id', '<>', $id)
+        $parents = Category::where('id', '<>', $id) // me can't be my father
             ->where(function ($query) use ($id) {
-                $query->whereNull('parent_id')
-                ->orWhere('parent_id', '<>', $id);
+                $query->whereNull('parent_id') // category with out parent will match
+                ->orWhere('parent_id', '<>', $id); // my childern can't be my father
             })->get();
 
         return view('dashboard.categories.edit', compact('category', 'parents'));
@@ -132,23 +136,23 @@ class CategoriesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(CategoryRequest $request, string $id)
+    public function update(CategoryRequest $request, string $id, UplodeImage $image)
     {
 
         // validation in CategoryRequest
-        // $request->validate(Category::rules($id));
+        // $request->validate(Category::rules($id)); // if you will not use  validation in CategoryRequest
 
         $category = Category::findOrFail($id);
 
-        $old_image = $category->image; // access for old_image to remove it from disk
+        $old_image = $category->image; // access for the pass to the old_image to remove it from disk
 
         // we can't merge image becuase we have in req image already so we access on all field of the req except the image on $data and push image field
         $data = $request->except('image');
 
-        $path = $this->uploadImage($request);
+        $path = $image->StoreImageAndGettingPass($request);
 
 
-        $data['image'] = $path ?? $old_image;
+        $data['image'] = $path ?? $old_image; // if no pass return the old one
 
         $category->update($data); // == $category->update($request->all())->save();
 
@@ -179,26 +183,13 @@ class CategoriesController extends Controller
             ->with('success','Category deleted');
     }
 
-    protected function uploadImage(Request $request) {
-        if(!$request->hasFile('image')) {
-            return ;
-        }
-
-        $file = $request->file('image');
-
-        $path = $file->store('uploads', [
-            'disk'=> 'public',
-        ]);
-
-        return $path;
-    }
 
     public function trash() {
         $categories = Category::onlyTrashed()->paginate();
         return view('dashboard.categories.trash', compact('categories'));
     }
 
-    public function restore(Request $request, $id) {
+    public function restore($id) {
         $category = Category::onlyTrashed()->findOrFail($id);
         $category->restore();
 

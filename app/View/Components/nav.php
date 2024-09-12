@@ -9,7 +9,7 @@ use Illuminate\View\Component;
 
 class nav extends Component
 {
-    public $items; // not need to pass it to view
+    public $items; // not need to pass it to view, access it from nav class
     public $active;
     /**
      * Create a new component instance.

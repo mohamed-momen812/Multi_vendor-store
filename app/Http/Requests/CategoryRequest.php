@@ -26,6 +26,6 @@ class CategoryRequest extends FormRequest
         $id = $this->route("category");
 
         // automatic validate this array, so we don't need to validate it in the controller once pass CategoryRequest
-        return Category::rules($id);
+        return Category::rules($id); // $id for exclude the current record from the uniqueness check.
     }
 }

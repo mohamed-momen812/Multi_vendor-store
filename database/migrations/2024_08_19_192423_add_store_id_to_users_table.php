@@ -14,8 +14,8 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('store_id')
-            ->nullable()
-            ->after('phone_number')
+            ->nullable() // user may haven't store
+            ->after('phone_number') // Place the column "after" another column
             ->constrained('stores') // constrained by defualt use id as a column from constrained table
             ->nullonDelete();
         });
