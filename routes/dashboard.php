@@ -7,14 +7,16 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Middleware\CheckUserType;
 use Illuminate\Support\Facades\Route;
 
+// here i allaw only admins to access dashboard, and handel fortify config in fortifyServiceProvider
 
-
-Route::group([
-    'middleware' => ['auth', CheckUserType::class . ':admin,super-admin'], //  passing argument to CheckUserType middleware
+Route::group([ // using middleware auth => using default gaurd web
+    // 'middleware' => ['auth', CheckUserType::class . ':admin,super-admin'], //  passing argument to CheckUserType middleware
+    'middleware' => ['auth:admin'],
     'as' => 'dashboard.', // prefix name for all routes
-    'prefix' => 'dashboard' // prefix uri for all routes
+    'prefix' => 'admin/dashboard' // prefix uri for all routes
 ], function () {
 
+    // Route-based methods (Route::get()): Laravel automatically instantiates the controller, so methods can (and usually should) be non-static.
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 

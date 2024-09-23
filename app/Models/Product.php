@@ -24,11 +24,29 @@ class Product extends Model
         "status",
     ];
 
+    // The attributes that should be hidden for serialization.
+    protected $hidden = [
+        "created_at",
+        'updated_at',
+        'deleted_at',
+        'image'
+    ];
+
+    // The accessors to append to the model's array response.
+    protected $appends = [
+        'image_url', // accessor
+    ];
+
     // applying global scopes
     // static allows the method to be used at the class level, ensuring that the logic defined in
     // booted is applied whenever the model class is loaded, without needing to create an instance of the model.
     protected static function booted(){ // The booted method is used to run any logic when a model is initialized.
         static::addGlobalScope('store', new StoreScope());
+
+        // creating slug before saving the product
+        static::creating(function (Product $product) {
+            $product->slug = Str::slug($product->name);
+        });
 
         // self:: is bound to the class where the method or property is defined.
         //static:: allows for late static binding and refers to the class that actually calls the method, even if it's inherited from a parent class.
@@ -77,7 +95,7 @@ class Product extends Model
         if(Str::startsWith($this->image, ['http://', 'https://'])) {
             return $this->image;
         }
-        // else reuturn image from storage
+        // else generate the full pass to the image in the store folder
         return asset('storage/' . $this->image);
     }
 
@@ -89,6 +107,35 @@ class Product extends Model
         }
 
         return round(100 - (100 * $this->price / $this->compare_price), 1);
+    }
+
+
+    public function scopeFilter(Builder $builder, $filters) {
+        $options = array_merge([
+            'store_id' => null,
+            'category_id' => null,
+            'tag_id' => null,
+            'status' => 'active',
+        ], $filters);
+
+
+        // Apply the callback if the given "value" is (or resolves to) truthy.
+        $builder->when($options['store_id'], function ($builder, $value)  {
+            $builder->where('store_id','=', $value);
+        });
+
+        $builder->when($options['status'], function ($builder, $value)  {
+            $builder->where('status','=', $value);
+        });
+
+        $builder->when($options['category_id'], function ($builder, $value)  {
+            $builder->where('category_id','=', $value);
+        });
+
+        $builder->when($options['tag_id'], function ($builder, $value)  {
+            $builder->whereRaw('id IN (SELECT product_id FROM product_tag WHERE tag_id = ?)', [$value]);
+        });
+
     }
 
 

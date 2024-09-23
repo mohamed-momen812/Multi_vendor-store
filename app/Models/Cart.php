@@ -29,7 +29,7 @@ class Cart extends Model
 
     protected static function booted()
     {
-        // use event and listner to create cart id and cart cookie id
+        // calling abserver class to call event and listner to create cart id and cart cookie id
         static::observe(CartObserver::class);
 
         // add global scope to make query as where("cookie_id", Cart::getCookieId())

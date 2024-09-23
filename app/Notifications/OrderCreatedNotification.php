@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -31,7 +32,7 @@ class OrderCreatedNotification extends Notification
      // here we can access user because user is the object claa notify method
      public function via(object $notifiable): array // $notifiable User model to send notification to
     {
-        return  ['mail', 'database'];
+        return  ['mail', 'database', 'broadcast'];
         // $channels = ['mail', 'database'];
 
         // if ($notifiable->notification_preferences['order_created']['sms'] ?? false) {
@@ -75,6 +76,22 @@ class OrderCreatedNotification extends Notification
             'url' => url('/dashboard'),
             'order_id' => $this->order->id,
         ];
+    }
+
+    /**
+     * data in the broadcast message
+     * @param mixed $notifiable
+     * @return BroadcastMessage
+     */
+    public function toBroadcast($notifiable) {
+
+        $addr = $this->order->billingAddress; // relation from order
+        return new BroadcastMessage([
+            'body' =>  "A new order (#{$this->order->number}) created by {$addr->name} from {$addr->country_name}",
+            'icon' => 'fas fa-file',
+            'url' => url('/dashboard'),
+            'order_id' => $this->order->id,
+        ]);
     }
 
     /**

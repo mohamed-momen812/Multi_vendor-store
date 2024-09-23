@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // for save the token sent to user to future verify
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');

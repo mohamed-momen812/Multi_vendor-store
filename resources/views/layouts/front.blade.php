@@ -49,27 +49,31 @@
                             <ul class="menu-top-link">
                                 <li>
                                     <div class="select-position">
-                                        <select id="select4">
-                                            <option value="0" selected>$ USD</option>
-                                            <option value="1">€ EURO</option>
-                                            <option value="2">$ CAD</option>
-                                            <option value="3">₹ INR</option>
-                                            <option value="4">¥ CNY</option>
-                                            <option value="5">৳ BDT</option>
-                                        </select>
+                                        <form action="{{ route('currency.store') }}" method="post">
+                                            @csrf
+                                            <select name="currency_code" onchange="this.form.submit()">
+                                                <option value="USD" @selected('USD' == session('currency_code'))>$ USD</option>
+                                                <option value="EUR" @selected('EUR' == session('currency_code'))>€ EURO</option>
+                                                <option value="ILS" @selected('ILS' == session('currency_code'))>$ ILS</option>
+                                                <option value="JOD" @selected('JOD' == session('currency_code'))>₹ JOD</option>
+                                                <option value="SAR" @selected('SAR' == session('currency_code'))>¥ SAR</option>
+                                                <option value="QAR" @selected('QAR' == session('currency_code'))>৳ QAR</option>
+                                            </select>
+                                        </form>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="select-position">
-                                        <select id="select5">
-                                            <option value="0" selected>English</option>
-                                            <option value="1">Español</option>
-                                            <option value="2">Filipino</option>
-                                            <option value="3">Français</option>
-                                            <option value="4">العربية</option>
-                                            <option value="5">हिन्दी</option>
-                                            <option value="6">বাংলা</option>
-                                        </select>
+                                        <form action="{{ URL::current() }}" method="get">
+                                            <select name="locale" onchange="this.form.submit()">
+                                                <option value="es">Español</option>
+                                                <option value="en">English</option>
+                                                <option value="fr">Filipino</option>
+                                                <option value="fr">Français</option>
+                                                <option value="ar">العربية</option>
+                                                <option value="cn">हिन्दी</option>
+                                            </select>
+                                        </form>
                                     </div>
                                 </li>
                             </ul>
@@ -78,26 +82,41 @@
                     <div class="col-lg-4 col-md-4 col-12">
                         <div class="top-middle">
                             <ul class="useful-links">
-                                <li><a href="index.html">Home</a></li>
-                                <li><a href="about-us.html">About Us</a></li>
-                                <li><a href="contact.html">Contact Us</a></li>
+                                <li><a href="index.html">@lang('Home')</a></li>
+                                <li><a href="about-us.html">@lang('About')</a></li>
+                                <li><a href="contact.html">@lang('Contact')</a></li>
                             </ul>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-4 col-12">
                         <div class="top-end">
-                            <div class="user">
+                            @auth
+                                <div class="user">
                                 <i class="lni lni-user"></i>
-                                Hello
+                                {{ Auth::user()->name }}
                             </div>
                             <ul class="user-login">
                                 <li>
-                                    <a href="login.html">Sign In</a>
+                                    <a href="{{ route('logout') }} " onclick="event.preventDefault(); document.getElementById('logout').submit()">Sign Out</a>
+                                </li>
+                                <form action="{{ route('logout') }}" id="logout" method="post" style="display:non">
+                                    @csrf
+                                </form>
+                            </ul>
+                            @else
+                            <div class="user">
+                                <i class="lni lni-user"></i>
+                                @lang('Hello')
+                            </div>
+                            <ul class="user-login">
+                                <li>
+                                    <a href="{{ route('login') }}">@lang('Sign In')</a>
                                 </li>
                                 <li>
-                                    <a href="register.html">Register</a>
+                                    <a href="{{ route('register') }}">@lang('Register')</a>
                                 </li>
                             </ul>
+                            @endauth
                         </div>
                     </div>
                 </div>

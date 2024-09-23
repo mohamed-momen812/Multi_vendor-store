@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -18,7 +19,6 @@ class CategoriesController extends Controller
      */
     public function index(Request $request)
     {
-
         // $request = request();  // acccess to the request, also we can access to the request via index(Requset $request)
         // $request->query(); // access to params in the request, return array
         // $query = Category::query(); // access to the query builder, create new query builder
@@ -39,7 +39,6 @@ class CategoriesController extends Controller
                 ->select('categories.*') // becuase i use selectRaw
                 ->selectRaw('( select count(*) from products where category_id = categories.id and status = active ) as products_count') // Add a new "raw" select expression to the query, without column
         */
-
         // access parent data in each single category, with like populate in node
         $categories = Category::with('parent')
             ->withCount([ // by the relation in category model git all related product

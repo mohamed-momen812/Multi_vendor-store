@@ -19,7 +19,7 @@ class StoreScope implements Scope
     {
             $user = Auth::user();
 
-            if($user && $user->store_id){ // becuase admin not have sotre_id so this condition not applying on hem
+            if($user && $user->store_id){ // becuase admin not have sotre_id so this condition not applying on hem and users which not store owner
                 $builder->where('store_id', '=', $user->store_id);
             }
     }

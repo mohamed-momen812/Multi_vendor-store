@@ -1,14 +1,16 @@
 import './bootstrap';
 
-import Alpine from 'alpinejs';
 
-import $ from 'jquery';
+import $ from "jquery";
 
 window.$ = window.jQuery = $;
 
-import './cart';  // Import your cart.js file
+import "./cart"; // Import your cart.js file
 
-
-window.Alpine = Alpine;
-
-Alpine.start();
+// access to private channel
+var channel = Echo.private(`App.Models.User.${userID}`);
+// make private notification listner to the notification event
+channel.notification(function (data) {
+    console.log(data);
+    alert(data.body);
+});

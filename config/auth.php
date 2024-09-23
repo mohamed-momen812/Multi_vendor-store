@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Admin;
+
 return [
 
     /*
@@ -14,8 +16,8 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'guard' => env('AUTH_GUARD', 'web'), // the guard uses
+        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'), // access password from users table
     ],
 
     /*
@@ -35,11 +37,20 @@ return [
     |
     */
 
-    'guards' => [
+    'guards' => [ // define list of guards to use in fortify as the guard
         'web' => [
-            'driver' => 'session',
+            'driver' => 'session', //  session for web interface not api, token for api
             'provider' => 'users',
         ],
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins', // admins provider declared in provider in providers in cofig.auth
+        ],
+        'api' => [
+        'driver' => 'token',
+        'provider' => 'users',
+        'hash' => false,
+    ],
     ],
 
     /*
@@ -56,13 +67,18 @@ return [
     | be assigned to any extra authentication guards you have defined.
     |
     | Supported: "database", "eloquent"
-    |
+    | if use database driver use model and if use eloquent driver use model
     */
 
-    'providers' => [
+    'providers' => [ // define list of providers to use in guards
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
         ],
 
         // 'users' => [
@@ -90,12 +106,19 @@ return [
     |
     */
 
-    'passwords' => [
+    'passwords' => [ // password table fortify use
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,
+        ],
+
+        'admins' => [
+            'provider' => 'admins', // provider not table
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'), // table will save the token sent to user to future verify
+            'expire' => 60, // data sent to user expire after 60 minute
+            'throttle' => 60, // one request per 1 min
         ],
     ],
 

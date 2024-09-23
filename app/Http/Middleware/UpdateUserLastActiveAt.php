@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class UpdateUserLastActiveAt
     {
         $user = $request->user();
 
-        if($user) {
+        if($user && $user instanceof User) {
             $user->forceFill([
                 "last_active_at" => Carbon::now(),
             ])

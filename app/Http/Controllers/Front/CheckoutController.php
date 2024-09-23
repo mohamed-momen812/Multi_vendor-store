@@ -26,6 +26,7 @@ class CheckoutController extends Controller
     }
 
     public function store(Request $request, CartRepository $cart) {
+
         // validation for multi dimentional array
         $request->validate([
             'addr.billing.first_name'=> ['required','string','max:255'],
@@ -33,7 +34,9 @@ class CheckoutController extends Controller
             'addr.billing.email'=> ['required','string','max:255'],
             'addr.billing.phone_number'=> ['required','string','max:255'],
             'addr.billing.city'=> ['required','string','max:255'],
+
         ]);
+
 
         // each cart has  1 product and 1 store, group carts by store_id here each store have many carts
         // make order for each store collection of carts, because multi store, if in single store no need for all of this
@@ -79,9 +82,7 @@ class CheckoutController extends Controller
                 DB::rollBack(); // transaction failed
                 throw $th;
             }
-
         // return redirect()->route('home'); comment for develop mode
-
       }
     }
 

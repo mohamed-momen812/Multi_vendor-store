@@ -7,11 +7,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail // must use MustVerifyEmail to send email on registeration to verify
 {
-    use HasFactory, Notifiable; // Notifiable to make this model notifiable to send notifictions
+    // HasApiTokens for allaw to create token for api
+    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable; // Notifiable to make this model notifiable to send notifictions
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +34,9 @@ class User extends Authenticatable implements MustVerifyEmail // must use MustVe
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at'
     ];
 
     /**

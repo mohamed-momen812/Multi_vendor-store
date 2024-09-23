@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // php artisan make:notification table
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type'); // type of the notification class
